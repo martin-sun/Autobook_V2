@@ -1,23 +1,148 @@
+"use client";
+
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEnvelope, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { auth, handleSupabaseError } from '@/lib/supabase-client';
 
 export default function SignUp() {
   const t = useTranslations();
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showMagicLinkSent, setShowMagicLinkSent] = useState(false);
+  
+  // 处理邮箱注册
+  const handleEmailSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    
+    try {
+      const { data, error } = await auth.signInWithEmail(email);
+      
+      if (error) {
+        throw error;
+      }
+      
+      // 显示魔术链接已发送消息
+      setShowMagicLinkSent(true);
+    } catch (err: any) {
+      setError(handleSupabaseError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // 处理Google注册
+  const handleGoogleSignUp = async () => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const { error } = await auth.signInWithGoogle();
+      if (error) throw error;
+    } catch (err: any) {
+      setError(handleSupabaseError(err));
+      setLoading(false);
+    }
+  };
+  
+  // 显示魔术链接已发送的消息
+  if (showMagicLinkSent) {
+    return (
+      <div className="text-center py-8">
+        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <FontAwesomeIcon icon={faEnvelope} className="text-green-500 text-2xl" />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('auth.checkYourEmail')}</h2>
+        <p className="text-gray-600 mb-6">
+          {t('auth.magicLinkSent', { email })}
+        </p>
+        <button 
+          onClick={() => setShowMagicLinkSent(false)}
+          className="text-primary hover:underline"
+        >
+          {t('auth.useAnotherEmail')}
+        </button>
+      </div>
+    );
+  }
   
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4">{t('auth.signUp')}</h2>
+      <h2 className="text-3xl font-bold text-gray-900 mb-2">{t('auth.getStarted')}</h2>
+      <p className="text-gray-600 mb-8">{t('auth.createYourAccount')}</p>
       
-      {/* 邮箱链接注册按钮 */}
-      <button 
-        className="w-full py-2 px-4 mb-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-      >
-        {t('auth.email')}
-      </button>
+      {error && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">
+          {error}
+        </div>
+      )}
       
-      {/* Google注册按钮 */}
-      <button 
-        className="w-full py-2 px-4 mb-4 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors flex items-center justify-center"
+      <form onSubmit={handleEmailSignUp} className="space-y-6">
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            {t('auth.emailAddress')}
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FontAwesomeIcon icon={faEnvelope} className="text-gray-400" />
+            </div>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary"
+              placeholder={t('auth.enterEmail')}
+              disabled={loading}
+            />
+          </div>
+        </div>
+        
+        <button
+          type="submit"
+          disabled={loading || !email}
+          className="w-full bg-primary text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? (
+            <span className="flex items-center justify-center">
+              <FontAwesomeIcon icon={faSpinner} className="animate-spin mr-2" />
+              {t('auth.processing')}
+            </span>
+          ) : (
+            t('auth.getStartedWithEmail')
+          )}
+        </button>
+        
+        <p className="text-xs text-gray-500 text-center">
+          {t('auth.bySigningUp')}{' '}
+          <Link href="/terms" className="text-primary hover:underline">{t('auth.terms')}</Link>{' '}
+          {t('auth.and')}{' '}
+          <Link href="/privacy" className="text-primary hover:underline">{t('auth.privacy')}</Link>
+        </p>
+      </form>
+      
+      <div className="relative my-8">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-300"></div>
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-4 bg-white text-gray-500">{t('auth.orContinueWith')}</span>
+        </div>
+      </div>
+      
+      <button
+        type="button"
+        onClick={handleGoogleSignUp}
+        disabled={loading}
+        className="w-full flex items-center justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-700 hover:bg-gray-50 transition focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
           <path
@@ -38,13 +163,13 @@ export default function SignUp() {
           />
           <path fill="none" d="M1 1h22v22H1z" />
         </svg>
-        {t('auth.googleSignIn')}
+        {t('auth.googleSignUp')}
       </button>
       
-      <div className="text-center mt-4">
-        <p className="text-sm text-gray-600">
-          {t('auth.signIn')}?{' '}
-          <Link href="/auth/signin" className="text-blue-600 hover:underline">
+      <div className="text-center mt-8">
+        <p className="text-gray-600">
+          {t('auth.alreadyHaveAccount')}{' '}
+          <Link href="/auth/signin" className="text-primary font-medium hover:underline">
             {t('auth.signIn')}
           </Link>
         </p>

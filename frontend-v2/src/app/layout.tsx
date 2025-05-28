@@ -5,11 +5,17 @@ export const metadata = {
   description: 'Professional Bookkeeping Solution',
 };
 
-// Root layout now just passes children through to locale layout
+// Root layout must include html and body tags
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <html suppressHydrationWarning>
+      <body suppressHydrationWarning>
+        {children}
+      </body>
+    </html>
+  );
 }

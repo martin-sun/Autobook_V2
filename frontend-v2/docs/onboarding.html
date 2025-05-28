@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoBooks Onboarding</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #f5f7ff 0%, #e8ecff 100%);
+        }
+        .step-active {
+            background: #4F46E5;
+            color: white;
+        }
+        .step-completed {
+            background: #10B981;
+            color: white;
+        }
+        .card-shadow {
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        }
+        .hover-scale {
+            transition: transform 0.2s ease;
+        }
+        .hover-scale:hover {
+            transform: scale(1.02);
+        }
+        .language-switcher {
+            position: relative;
+        }
+    </style>
+    <script>
+        function showPage(pageNumber) {
+            // Hide all pages
+            document.getElementById('page1').classList.add('hidden');
+            document.getElementById('page2').classList.add('hidden');
+            document.getElementById('page3').classList.add('hidden');
+            
+            // Show selected page
+            document.getElementById('page' + pageNumber).classList.remove('hidden');
+            
+            // Smooth scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleLanguageMenu(event) {
+            event.stopPropagation();
+            const menu = document.getElementById('languageMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        function changeLanguage(lang) {
+            document.getElementById('currentLang').textContent = lang;
+            document.getElementById('languageMenu').classList.add('hidden');
+        }
+
+        // Close language menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const languageMenu = document.getElementById('languageMenu');
+            const languageSwitcher = document.querySelector('.language-switcher');
+            
+            if (languageMenu && !languageSwitcher.contains(event.target)) {
+                languageMenu.classList.add('hidden');
+            }
+        });
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation Header -->
+    <nav class="fixed w-full bg-white/90 backdrop-blur-md z-50 shadow-sm">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                        <span class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                            AutoBooks
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Right Side Menu -->
+                <div class="flex items-center space-x-8">
+                    <!-- Language Switcher -->
+                    <div class="relative language-switcher">
+                        <button class="flex items-center space-x-1 text-gray-700 hover:text-blue-600 transition" onclick="toggleLanguageMenu(event)">
+                            <span id="currentLang">EN</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        
+                        <div id="languageMenu" class="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg py-1 z-10 hidden">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="changeLanguage('EN')">English</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="changeLanguage('FR')">Français</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="changeLanguage('ZH')">中文</a>
+                        </div>
+                    </div>
+
+                    <!-- Sign In Link -->
+                    <a href="/login" class="text-gray-700 hover:text-blue-600 transition">
+                        Sign In
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Spacer for fixed navigation -->
+    <div class="h-16"></div>
+
+    <!-- Page 1: Welcome & Business Information -->
+    <div id="page1" class="container mx-auto px-4 py-8 max-w-6xl">
+        <div class="grid grid-cols-12 gap-8">
+            <!-- Progress Sidebar -->
+            <div class="col-span-3">
+                <div class="bg-white rounded-2xl p-6 card-shadow">
+                    <h3 class="text-sm font-semibold text-gray-600 mb-6">Setup Progress</h3>
+                    
+                    <!-- Progress Steps -->
+                    <div class="relative">
+                        <!-- Progress Line -->
+                        <div class="absolute left-4 top-8 bottom-8 w-0.5 bg-gray-200"></div>
+                        
+                        <!-- Steps -->
+                        <div class="space-y-6 relative">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-8 h-8 rounded-full step-active flex items-center justify-center relative z-10">
+                                    <span class="text-xs font-bold">1</span>
+                                </div>
+                                <span class="text-sm font-medium text-gray-900">Business Information</span>
+                            </div>
+                            
+                            <div class="flex items-center space-x-4">
+                                <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center relative z-10">
+                                    <span class="text-xs font-bold text-gray-500">2</span>
+                                </div>
+                                <span class="text-sm text-gray-500">Accounting Setup</span>
+                            </div>
+                            
+                            <div class="flex items-center space-x-4">
+                                <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center relative z-10">
+                                    <span class="text-xs font-bold text-gray-500">3</span>
+                                </div>
+                                <span class="text-sm text-gray-500">Ready to Go</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-span-9">
+                <div class="bg-white rounded-2xl p-12 card-shadow">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Welcome to AutoBooks</h1>
+                    <p class="text-gray-600 mb-8">Let's get started with your business information</p>
+                    
+                    <div class="space-y-8">
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-900 mb-6">Business Details</h2>
+                            
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Legal Business Name</label>
+                                    <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter your business name">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Business Type</label>
+                                    <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <option>Select business type</option>
+                                        <option>Sole Proprietorship</option>
+                                        <option>Partnership</option>
+                                        <option>Corporation</option>
+                                        <option>LLC</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Business Registration Number</label>
+                                        <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="BN123456789">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Tax ID (GST/HST)</label>
+                                        <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="123456789 RT0001">
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Primary Business Activity</label>
+                                    <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <option>Select your industry</option>
+                                        <option>Professional Services</option>
+                                        <option>Retail</option>
+                                        <option>Manufacturing</option>
+                                        <option>Technology</option>
+                                        <option>Healthcare</option>
+                                        <option>Other</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">What year did you start your business?</label>
+                                    <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <option>Select year</option>
+                                        <option>2025</option>
+                                        <option>2024</option>
+                                        <option>2023</option>
+                                        <option>2022</option>
+                                        <option>2021</option>
+                                        <option>2020</option>
+                                        <option>2019</option>
+                                        <option>2018</option>
+                                        <option>2017</option>
+                                        <option>2016</option>
+                                        <option>2015</option>
+                                        <option>Before 2015</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Navigation -->
+                    <div class="flex justify-between items-center mt-12">
+                        <button class="text-gray-400 cursor-not-allowed" disabled>
+                            ← PREVIOUS
+                        </button>
+                        <button onclick="showPage(2)" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                            NEXT STEP →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 2: Accounting Setup -->
+    <div id="page2" class="container mx-auto px-4 py-8 max-w-6xl hidden">
+        <div class="grid grid-cols-12 gap-8">
+            <!-- Progress Sidebar -->
+            <div class="col-span-3">
+                <div class="bg-white rounded-2xl p-6 card-shadow">
+                    <h3 class="text-sm font-semibold text-gray-600 mb-6">Setup Progress</h3>
+                    
+                    <!-- Progress Steps -->
+                    <div class="relative">
+                        <div class="absolute left-4 top-8 bottom-8 w-0.5 bg-gray-200"></div>
+                        <div class="absolute left-4 top-8 h-14 w-0.5 bg-green-500"></div>
+                        
+                        <div class="space-y-6 relative">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-8 h-8 rounded-full step-completed flex items-center justify-center relative z-10">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                                <span class="text-sm font-medium text-gray-900">Business Information</span>
+                            </div>
+                            
+                            <div class="flex items-center space-x-4">
+                                <div class="w-8 h-8 rounded-full step-active flex items-center justify-center relative z-10">
+                                    <span class="text-xs font-bold">2</span>
+                                </div>
+                                <span class="text-sm font-medium text-gray-900">Accounting Setup</span>
+                            </div>
+                            
+                            <div class="flex items-center space-x-4">
+                                <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center relative z-10">
+                                    <span class="text-xs font-bold text-gray-500">3</span>
+                                </div>
+                                <span class="text-sm text-gray-500">Ready to Go</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-span-9">
+                <div class="bg-white rounded-2xl p-12 card-shadow">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Accounting Setup</h1>
+                    <p class="text-gray-600 mb-8">Configure your accounting preferences</p>
+                    
+                    <div class="space-y-8">
+                        <!-- Fiscal Year Settings -->
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-900 mb-6">Fiscal Year Settings</h2>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Fiscal Year End</label>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <option>December</option>
+                                        <option>January</option>
+                                        <option>February</option>
+                                        <option>March</option>
+                                        <option>April</option>
+                                        <option>May</option>
+                                        <option>June</option>
+                                        <option>July</option>
+                                        <option>August</option>
+                                        <option>September</option>
+                                        <option>October</option>
+                                        <option>November</option>
+                                    </select>
+                                    
+                                    <input type="number" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="31" min="1" max="31" value="31">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Currency -->
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-900 mb-6">Currency</h2>
+                            <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option>Canadian Dollar (CAD)</option>
+                                <option>US Dollar (USD)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Chart of Accounts Template -->
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-900 mb-6">Chart of Accounts Template</h2>
+                            
+                            <div class="space-y-4">
+                                <label class="flex items-start p-4 border-2 border-blue-500 rounded-lg cursor-pointer bg-blue-50">
+                                    <input type="radio" name="template" class="mt-1 mr-3" checked>
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900">Standard</h3>
+                                        <p class="text-sm text-gray-600 mt-1">Common for most businesses with standard categories for assets, liabilities, equity, income and expenses</p>
+                                    </div>
+                                </label>
+                                
+                                <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-gray-300">
+                                    <input type="radio" name="template" class="mt-1 mr-3">
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900">Professional Services</h3>
+                                        <p class="text-sm text-gray-600 mt-1">Optimized for service-based businesses such as consulting, legal, or accounting firms</p>
+                                    </div>
+                                </label>
+                                
+                                <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-gray-300">
+                                    <input type="radio" name="template" class="mt-1 mr-3">
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900">Retail Business</h3>
+                                        <p class="text-sm text-gray-600 mt-1">Focused on inventory, sales, and cost of goods sold for retail operations</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Navigation -->
+                    <div class="flex justify-between items-center mt-12">
+                        <button onclick="showPage(1)" class="text-gray-600 font-medium hover:text-gray-900 transition-colors">
+                            ← PREVIOUS
+                        </button>
+                        <button onclick="showPage(3)" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                            NEXT STEP →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 3: Ready to Go -->
+    <div id="page3" class="container mx-auto px-4 py-8 max-w-6xl hidden">
+        <div class="grid grid-cols-12 gap-8">
+            <!-- Progress Sidebar -->
+            <div class="col-span-3">
+                <div class="bg-white rounded-2xl p-6 card-shadow">
+                    <h3 class="text-sm font-semibold text-gray-600 mb-6">Setup Progress</h3>
+                    
+                    <!-- Progress Steps -->
+                    <div class="relative">
+                        <div class="absolute left-4 top-8 bottom-8 w-0.5 bg-green-500"></div>
+                        
+                        <div class="space-y-6 relative">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-8 h-8 rounded-full step-completed flex items-center justify-center relative z-10">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                                <span class="text-sm font-medium text-gray-900">Business Information</span>
+                            </div>
+                            
+                            <div class="flex items-center space-x-4">
+                                <div class="w-8 h-8 rounded-full step-completed flex items-center justify-center relative z-10">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                                <span class="text-sm font-medium text-gray-900">Accounting Setup</span>
+                            </div>
+                            
+                            <div class="flex items-center space-x-4">
+                                <div class="w-8 h-8 rounded-full step-active flex items-center justify-center relative z-10">
+                                    <span class="text-xs font-bold">3</span>
+                                </div>
+                                <span class="text-sm font-medium text-gray-900">Ready to Go</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-span-9">
+                <div class="bg-white rounded-2xl p-12 card-shadow">
+                    <div class="text-center mb-12">
+                        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <h1 class="text-3xl font-bold text-gray-900 mb-4">Setup Complete!</h1>
+                        <p class="text-gray-600 text-lg">Your business workspace is ready. You'll now be directed to your dashboard where you can start managing your finances.</p>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-2xl p-8 mb-8">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-6">What's next?</h2>
+                        
+                        <div class="space-y-6">
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                                    <span class="text-blue-600 font-bold">1</span>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900 mb-1">Set up your Chart of Accounts</h3>
+                                    <p class="text-gray-600">Review and customize your chart of accounts to match your business needs</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                                    <span class="text-blue-600 font-bold">2</span>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900 mb-1">Connect your banking accounts</h3>
+                                    <p class="text-gray-600">Link your bank accounts or import transactions to start tracking your finances</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                                    <span class="text-blue-600 font-bold">3</span>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900 mb-1">Create your first transaction</h3>
+                                    <p class="text-gray-600">Record income and expenses to start building your financial records</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Navigation -->
+                    <div class="flex justify-between items-center">
+                        <button onclick="showPage(2)" class="text-gray-600 font-medium hover:text-gray-900 transition-colors">
+                            ← PREVIOUS
+                        </button>
+                        <button class="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                            FINISH SETUP →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase-client";
 
 // 处理 Supabase 认证回调
 export default function AuthCallback() {
@@ -12,17 +12,17 @@ export default function AuthCallback() {
     // 处理认证回调
     const handleAuthCallback = async () => {
       const { error } = await supabase.auth.getSession();
-      
+
       if (error) {
-        console.error('Error during auth callback:', error);
-        router.push('/auth/signin');
+        console.error("Error during auth callback:", error);
+        router.push("/auth/signin");
         return;
       }
-      
+
       // 认证成功，重定向到仪表盘
-      router.push('/dashboard');
+      router.push("/dashboard");
     };
-    
+
     handleAuthCallback();
   }, [router]);
 

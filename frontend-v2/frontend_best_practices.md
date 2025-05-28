@@ -154,6 +154,85 @@ src/
   - [ ] 实现乐观更新以提升用户体验
   - [ ] 根据数据变更频率设置适当的重新验证策略
 
+## Supabase 使用规范
+
+- [x] **客户端与服务端分离**：
+  - [ ] 使用 `@supabase/ssr` 包替代已弃用的 `@supabase/auth-helpers-nextjs`
+  - [ ] 严格区分客户端和服务端的 Supabase 客户端实例
+  - [ ] 服务端使用 `createServerClient`，客户端使用 `createBrowserClient`
+
+- [x] **服务端 Supabase 客户端**：
+  - [ ] 在 `src/lib/supabase-server.ts` 中定义服务端 Supabase 客户端
+  - [ ] 服务端客户端仅在 Server Components 和 Server Actions 中使用
+  - [ ] 使用 cookies() 函数获取请求上下文中的 cookies
+  - [ ] 示例：
+```ts
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+
+export function createServerSupabaseClient() {
+  const cookieStore = cookies()
+  
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name) {
+          return cookieStore.get(name)?.value
+        },
+        set(name, value, options) {
+          cookieStore.set({ name, value, ...options })
+        },
+        remove(name, options) {
+          cookieStore.set({ name, value: '', ...options })
+        },
+      },
+    }
+  )
+}
+```
+
+- [x] **客户端 Supabase 客户端**：
+  - [ ] 在 `src/lib/supabase-client.ts` 中定义客户端 Supabase 客户端
+  - [ ] 客户端实例仅在 Client Components 中使用
+  - [ ] 使用 `createBrowserClient` 创建客户端实例
+  - [ ] 示例：
+```ts
+import { createBrowserClient } from '@supabase/ssr'
+
+export function createBrowserSupabaseClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
+```
+
+- [x] **认证状态管理**：
+  - [ ] 使用 `createClientComponentClient` 处理客户端认证流程
+  - [ ] 实现 `useAuth` 钩子统一管理认证状态
+  - [ ] 在 Server Components 中使用 `createServerSupabaseClient().auth.getUser()` 获取当前用户
+  - [ ] 避免在客户端和服务端之间共享认证状态，应通过 cookies 传递
+
+- [x] **数据访问模式**：
+  - [ ] 简单查询直接使用 Supabase 客户端
+  - [ ] 复杂查询使用 Edge Functions 或数据库函数
+  - [ ] 遵循"职责边界"章节中的前端直连与 Edge Function 边界规则
+  - [ ] 避免在客户端执行复杂的数据处理逻辑
+
+- [x] **错误处理**：
+  - [ ] 为所有 Supabase 操作实现统一的错误处理
+  - [ ] 使用 try/catch 捕获并处理错误
+  - [ ] 区分网络错误、认证错误和业务逻辑错误
+  - [ ] 向用户提供友好的错误消息
+
+- [x] **性能优化**：
+  - [ ] 使用 `.select()` 只获取需要的字段
+  - [ ] 使用 `.limit()` 限制返回的记录数量
+  - [ ] 避免在 `useEffect` 依赖数组中包含 Supabase 客户端实例
+  - [ ] 使用 SWR 或 React Query 缓存 Supabase 查询结果
+
 ## 表单处理
 
 - [x] **表单管理**：

@@ -25,123 +25,8 @@ BEGIN
 END;
 $$;
 
--- 初始化工作空间默认设置函数
-CREATE OR REPLACE FUNCTION initialize_workspace_defaults(p_workspace_id UUID)
-RETURNS VOID
-LANGUAGE plpgsql SECURITY DEFINER
-AS $$
-DECLARE
-  v_template_id UUID;
-  v_workspace_type TEXT;
-  v_current_year INTEGER;
-  v_fiscal_year_start DATE;
-  v_fiscal_year_end DATE;
-  v_fiscal_year_id UUID;
-BEGIN
-  -- 获取工作空间类型
-  SELECT type INTO v_workspace_type
-  FROM workspaces
-  WHERE id = p_workspace_id;
-  
-  -- 设置侧边栏菜单
-  SELECT id INTO v_template_id
-  FROM sidebar_templates
-  WHERE workspace_type = v_workspace_type
-  LIMIT 1;
-  
-  IF v_template_id IS NOT NULL THEN
-    INSERT INTO workspace_menu_configs (workspace_id, template_id)
-    VALUES (p_workspace_id, v_template_id);
-  END IF;
-  
-  -- 创建默认会计年度
-  v_current_year := EXTRACT(YEAR FROM CURRENT_DATE);
-  
-  -- 根据工作空间设置确定会计年度的开始和结束日期
-  SELECT 
-    TO_DATE(v_current_year || '-' || fiscal_year_start_month || '-01', 'YYYY-MM-DD'),
-    TO_DATE(v_current_year || '-' || SPLIT_PART(default_fiscal_year_end, '-', 1) || '-' || SPLIT_PART(default_fiscal_year_end, '-', 2), 'YYYY-MM-DD')
-  INTO v_fiscal_year_start, v_fiscal_year_end
-  FROM workspaces
-  WHERE id = p_workspace_id;
-  
-  -- 如果结束日期早于开始日期，说明跨年，结束日期应该是下一年
-  IF v_fiscal_year_end < v_fiscal_year_start THEN
-    v_fiscal_year_end := v_fiscal_year_end + INTERVAL '1 year';
-  END IF;
-  
-  -- 创建会计年度
-  INSERT INTO fiscal_years (workspace_id, name, start_date, end_date, created_by)
-  VALUES (p_workspace_id, v_current_year::TEXT, v_fiscal_year_start, v_fiscal_year_end, auth.uid())
-  RETURNING id INTO v_fiscal_year_id;
-  
-  -- 如果是个人工作空间，创建默认账户组和科目
-  IF v_workspace_type = 'personal' THEN
-    -- 复制默认账户组
-    INSERT INTO account_groups (workspace_id, account_type, name, description, display_order)
-    SELECT p_workspace_id, account_type, name, description, display_order
-    FROM account_groups
-    WHERE workspace_type = 'personal' AND is_template = TRUE;
-    
-    -- 复制默认科目
-    INSERT INTO chart_of_accounts (workspace_id, code, name, type, description)
-    SELECT p_workspace_id, code, name, type, description
-    FROM chart_of_accounts
-    WHERE workspace_id IS NULL AND type IN ('asset', 'liability', 'equity', 'income', 'expense');
-  
-  -- 如果是商业工作空间，创建商业默认账户组和科目
-  ELSIF v_workspace_type = 'business' THEN
-    -- 复制默认账户组
-    INSERT INTO account_groups (workspace_id, account_type, name, description, display_order)
-    SELECT p_workspace_id, account_type, name, description, display_order
-    FROM account_groups
-    WHERE workspace_type = 'business' AND is_template = TRUE;
-    
-    -- 复制默认科目
-    INSERT INTO chart_of_accounts (workspace_id, code, name, type, description)
-    SELECT p_workspace_id, code, name, type, description
-    FROM chart_of_accounts
-    WHERE workspace_id IS NULL AND type IN ('asset', 'liability', 'equity', 'income', 'expense');
-  END IF;
-END;
-$$;
-
--- 创建工作空间函数
-CREATE OR REPLACE FUNCTION create_workspace(
-  p_name TEXT,
-  p_type TEXT,
-  p_currency TEXT DEFAULT 'CAD'
-)
-RETURNS UUID
-LANGUAGE plpgsql SECURITY DEFINER
-AS $$
-DECLARE
-  v_workspace_id UUID;
-BEGIN
-  -- 验证用户已登录
-  IF auth.uid() IS NULL THEN
-    RAISE EXCEPTION 'Not authenticated';
-  END IF;
-  
-  -- 验证工作空间类型
-  IF p_type NOT IN ('personal', 'business') THEN
-    RAISE EXCEPTION 'Invalid workspace type. Must be "personal" or "business"';
-  END IF;
-  
-  -- 创建工作空间
-  INSERT INTO workspaces (user_id, name, type, currency, owner_id, created_by)
-  VALUES (auth.uid(), p_name, p_type, p_currency, auth.uid(), auth.uid())
-  RETURNING id INTO v_workspace_id;
-  
-  -- 添加用户为工作空间成员
-  INSERT INTO workspace_members (workspace_id, user_id, role_id, status, invited_by)
-  VALUES (v_workspace_id, auth.uid(), 
-    (SELECT id FROM roles WHERE name = 'Owner' LIMIT 1),
-    'active', auth.uid());
-  
-  RETURN v_workspace_id;
-END;
-$$;
+-- 删除以下函数定义
+DROP FUNCTION IF EXISTS initialize_workspace_defaults;
 
 -- 获取用户工作空间函数
 CREATE OR REPLACE FUNCTION get_user_workspaces()
@@ -260,3 +145,6 @@ BEGIN
   RETURN TRUE;
 END;
 $$;
+
+-- 删除以下函数定义
+DROP FUNCTION IF EXISTS create_workspace;

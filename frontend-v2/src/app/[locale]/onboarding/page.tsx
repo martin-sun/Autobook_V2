@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase-client";
-import { Card, CardBody, Typography, Button } from "@material-tailwind/react";
+import { Card, CardBody, Typography, Button, Alert } from "@material-tailwind/react";
 import { ProgressStepper } from "@/components/onboarding/ProgressStepper";
 import { WelcomeStep } from "@/components/onboarding/WelcomeStep";
 import { BusinessInfoStep } from "@/components/onboarding/BusinessInfoStep";
@@ -10,10 +10,12 @@ import { AccountingSetupStep } from "@/components/onboarding/AccountingSetupStep
 import { CompletionStep } from "@/components/onboarding/CompletionStep";
 import { useRouter, useParams } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRight, faArrowLeft, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight, faArrowLeft, faCheckCircle, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
 export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     businessName: "",
     businessType: "",
@@ -56,38 +58,70 @@ export default function OnboardingPage() {
     },
   ];
 
+  // 验证表单数据
+  const validateForm = (step: number) => {
+    setError(null);
+    
+    if (step === 1) { // Business Information step
+      if (!formData.businessName) {
+        setError("Business name is required");
+        return false;
+      }
+      if (!formData.businessType) {
+        setError("Please select a business type");
+        return false;
+      }
+    }
+    
+    return true;
+  };
+
   const handleNext = async () => {
+    // 如果不是最后一步，验证当前步骤并前进
     if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+      if (validateForm(currentStep)) {
+        setCurrentStep(currentStep + 1);
+      }
     } else {
+      // 最后一步，创建工作空间
       try {
-        // Create new workspace
-        const { data, error } = await supabase.rpc("create_workspace", {
+        setIsLoading(true);
+        setError(null);
+        
+        // 创建新工作空间
+        const { data, error: createError } = await supabase.rpc("create_workspace", {
           p_name: formData.businessName,
           p_type: "business",
           p_currency: formData.currency,
         });
 
-        if (error) throw error;
+        if (createError) throw createError;
 
-        // Initialize workspace with accounting settings
+        // 初始化工作空间会计设置
         if (data) {
           const workspaceId = data;
 
-          // Update workspace settings with fiscal year preferences
-          await supabase
+          // 更新工作空间的财政年度设置
+          const { error: updateError } = await supabase
             .from("workspaces")
             .update({
-              fiscal_year_start_month: formData.fiscalYearStartMonth,
+              fiscal_year_start_month: parseInt(formData.fiscalYearStartMonth),
               default_fiscal_year_end: `${formData.fiscalYearEndMonth}-${formData.fiscalYearEndDay}`,
             })
             .eq("id", workspaceId);
+            
+          if (updateError) throw updateError;
 
-          // Redirect to dashboard
-          router.push(`/${params.locale}/dashboard`);
+          // 重定向到包含工作空间ID的仪表盘
+          router.push(`/${params.locale}/dashboard/${workspaceId}`);
+        } else {
+          throw new Error("Failed to create workspace");
         }
-      } catch (error) {
-        console.error("Error creating workspace:", error);
+      } catch (err) {
+        console.error("Error creating workspace:", err);
+        setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -161,6 +195,16 @@ export default function OnboardingPage() {
                 </Typography>
               </div>
               
+              {error && (
+                <Alert 
+                  color="red" 
+                  className="mb-6 bg-red-50 text-red-800 border border-red-200"
+                  icon={<FontAwesomeIcon icon={faExclamationTriangle} className="h-6 w-6" />}
+                >
+                  {error}
+                </Alert>
+              )}
+              
               <div className="bg-gray-50 p-6 rounded-lg mb-8">
                 {steps[currentStep].component}
               </div>
@@ -177,10 +221,11 @@ export default function OnboardingPage() {
                 </Button>
                 <Button 
                   onClick={handleNext}
-                  className="flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-white hover:bg-blue-600 transition shadow-md hover:shadow-lg"
+                  disabled={isLoading}
+                  className="flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-white hover:bg-blue-600 transition shadow-md hover:shadow-lg disabled:opacity-70 disabled:bg-blue-400"
                 >
-                  {currentStep === steps.length - 1 ? "Finish Setup" : "Next Step"}
-                  <FontAwesomeIcon icon={faArrowRight} className="text-sm" />
+                  {isLoading ? "Processing..." : currentStep === steps.length - 1 ? "Finish Setup" : "Next Step"}
+                  {!isLoading && <FontAwesomeIcon icon={faArrowRight} className="text-sm" />}
                 </Button>
               </div>
             </CardBody>
